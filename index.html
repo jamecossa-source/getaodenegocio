@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gestão do Negócio</title>
+<meta name="description" content="Gestão de vendas em dólar e metical, com lucro diário e mensal.">
+<meta name="theme-color" content="#0A2B29">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.ico">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --bg:#F6F4EE; --ink:#152420; --ink-soft:#4B5B55;
+    --green:#0F3D3A; --green-deep:#0A2B29; --amber:#D98E2B;
+    --line:#D9D3C4; --card:#FFFFFF; --danger:#B3452F;
+    padding-top: env(safe-area-inset-top,0px);
+    padding-bottom: env(safe-area-inset-bottom,0px);
+    box-sizing:border-box;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12201D; --ink:#EDEAE0; --ink-soft:#AEBBB3; --green:#3E8E7E; --green-deep:#0A2B29;
+    --amber:#E3A34B; --line:#2B3A34; --card:#182924; --danger:#E27058;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);height:100%;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100%;
+    -webkit-tap-highlight-color:transparent;}
+  .wrap{max-width:980px;margin:0 auto;padding:20px 16px 84px;}
+  @media (min-width:600px){.wrap{padding:24px 20px 84px;}}
+  header{margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+  h1{font-size:24px;font-weight:700;letter-spacing:-0.01em;margin:0 0 6px;color:var(--green-deep);}
+  @media (min-width:600px){h1{font-size:28px;}}
+  :root[data-theme="dark"] h1{color:var(--amber);}
+  header p{margin:0;color:var(--ink-soft);font-size:14px;}
+  .app-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .app-header h1{flex:1;min-width:0;margin:0;}
+  .user-name{font-size:14.5px;font-weight:600;color:var(--ink);}
+  .user-block{display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .avatar-wrap{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;flex-shrink:0;}
+  .avatar-wrap:hover{border-color:var(--green);}
+  .avatar-img{width:100%;height:100%;object-fit:cover;display:block;}
+  .avatar-placeholder{font-size:17px;opacity:.55;}
+  .menu-toggle{display:inline-flex;align-items:center;justify-content:center;
+    width:42px;height:42px;background:var(--card);border:1px solid var(--line);
+    border-radius:8px;font-size:19px;cursor:pointer;flex-shrink:0;}
+  .app-layout{display:flex;flex-direction:column;gap:16px;position:relative;}
+  @media (min-width:800px){.app-layout{flex-direction:row;align-items:flex-start;}}
+  .sidebar{display:none;flex-direction:column;gap:6px;position:absolute;left:0;right:0;top:0;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.18);z-index:50;}
+  .sidebar.open{display:flex;}
+  @media (min-width:800px){
+    .menu-toggle{display:none;}
+    .sidebar{display:flex !important;position:sticky;top:16px;width:200px;flex-shrink:0;
+      padding:0;background:transparent;border:none;box-shadow:none;}
+  }
+  .nav-btn{background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+    padding:11px 16px;border-radius:9px;font-size:14px;cursor:pointer;white-space:nowrap;text-align:left;min-height:44px;flex-shrink:0;}
+  .nav-btn.active{background:var(--green-deep);color:#fff;border-color:var(--green-deep);}
+  :root[data-theme="dark"] .nav-btn.active{background:var(--amber);color:var(--green-deep);border-color:var(--amber);}
+  .main-content{flex:1;min-width:0;}
+  .app-section{display:none;}
+  .app-section.active{display:block;}
+  .logout-fixed{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    background:var(--card);border:1px solid var(--line);color:var(--danger);
+    padding:11px 16px;min-height:44px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,0.15);z-index:40;}
+  .logout-fixed:hover{border-color:var(--danger);}
+  .icon-btn{background:var(--card);border:1px solid var(--line);color:var(--ink);
+    padding:10px 14px;min-height:40px;border-radius:8px;font-size:13.5px;cursor:pointer;}
+  .icon-btn:hover{border-color:var(--green);}
+  .lucro-total-hero{
+    text-align:center;background:var(--amber);color:var(--green-deep);
+    border-radius:10px;padding:10px 16px;margin-top:4px;
+  }
+  .lucro-total-hero .label{font-size:11px;font-weight:600;letter-spacing:0.02em;opacity:.85;margin-bottom:2px;}
+  .lucro-total-hero .value{font-size:20px;font-weight:800;letter-spacing:-0.01em;}
+  .lucro-total-hero .value.neg{color:var(--danger);}
+  .rate-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--green-deep);color:#F1EFE6;padding:10px 14px;border-radius:10px;margin-top:14px;}
+  .rate-bar label{font-size:13.5px;opacity:.85;}
+  .rate-bar input{width:110px;padding:8px;border-radius:6px;border:none;font-size:16px;background:#fff;color:#152420;}
+  .rate-bar span.hint{font-size:12.5px;opacity:.75;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px;}
+  @media (min-width:600px){.card{padding:18px;margin-top:16px;}}
+  .card h2{font-size:15px;margin:0 0 16px;color:var(--ink);font-weight:600;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (min-width:560px){.grid{grid-template-columns:1fr 1fr 1fr 1fr;}}
+  .grid.grid-3{grid-template-columns:1fr;}
+  @media (min-width:560px){.grid.grid-3{grid-template-columns:1fr 1fr 1fr;}}
+  .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:5px;}
+  .field input, .field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;font-size:16px;background:var(--bg);color:var(--ink);}
+  .field input:focus, .field select:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:42px;}
+  .toggle-pass{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;font-size:16px;padding:8px;line-height:1;}
+  .actions{display:flex;flex-wrap:wrap;justify-content:flex-end;margin-top:16px;gap:10px;}
+  button.primary{background:var(--green);color:#fff;border:none;padding:11px 20px;min-height:44px;border-radius:7px;font-size:14.5px;font-weight:600;cursor:pointer;}
+  button.primary:hover{background:var(--green-deep);}
+  button.ghost{background:none;border:1px solid var(--line);color:var(--ink-soft);padding:11px 16px;min-height:44px;border-radius:7px;font-size:14px;cursor:pointer;}
+  .totals{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;}
+  @media (min-width:480px){.totals{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;}
+  .stat .label{font-size:11.5px;color:var(--ink-soft);margin-bottom:2px;}
+  .stat .value{font-size:17px;font-weight:700;color:var(--green-deep);}
+  :root[data-theme="dark"] .stat .value{color:var(--amber);}
+  .stat .value.neg{color:var(--danger);}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:14px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:780px;}
+  .mini-table{min-width:0;}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th{color:var(--ink-soft);font-weight:600;font-size:12px;}
+  tr:hover td{background:rgba(15,61,58,0.04);}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  td.pos{color:var(--green);font-weight:600;}
+  td.neg{color:var(--danger);font-weight:600;}
+  .del{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:13px;padding:6px 10px;border-radius:5px;min-height:36px;}
+  .del:hover{background:rgba(179,69,47,0.12);color:var(--danger);}
+  .empty{padding:24px;text-align:center;color:var(--ink-soft);font-size:14px;}
+  .section-title{font-size:16px;font-weight:700;margin:32px 0 0;color:var(--green-deep);}
+  :root[data-theme="dark"] .section-title{color:var(--amber);}
+
+  #loginScreen,#cadastroScreen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;}
+  .top-theme-btn{position:absolute;top:20px;right:20px;}
+  .login-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 24px;width:100%;max-width:360px;}
+  .login-card h1{font-size:22px;margin:0 0 4px;}
+  .login-card p{margin:0 0 22px;color:var(--ink-soft);font-size:14px;}
+  .login-card .field{margin-bottom:14px;}
+  .hint-text{font-size:12.5px;color:var(--ink-soft);margin-top:-6px;margin-bottom:14px;}
+  .error-msg{color:var(--danger);font-size:13.5px;margin-top:10px;min-height:16px;}
+  .success-msg{color:var(--green);font-size:13.5px;margin-top:10px;min-height:16px;}
+  .link-btn{display:block;width:100%;text-align:center;background:none;border:none;color:var(--ink-soft);
+    font-size:13.5px;cursor:pointer;text-decoration:underline;padding:0;margin-top:16px;}
+  #app{display:none;}
+
+  .toast-wrap{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    display:flex;flex-direction:column;align-items:center;gap:8px;z-index:1000;pointer-events:none;padding:0 16px;}
+  .toast{background:var(--green-deep);color:#F1EFE6;padding:12px 18px;border-radius:9px;font-size:13.5px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.18);max-width:420px;text-align:center;
+    animation:toast-in .18s ease-out;}
+  .toast.err{background:var(--danger);}
+  @keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<div id="cadastroScreen" style="display:none;">
+  <button class="icon-btn top-theme-btn theme-toggle-btn" id="cadastroThemeToggle">🌙 Tema escuro</button>
+  <div class="login-card">
+    <h1 data-i18n="cadastroTitle">Criar conta</h1>
+    <p data-i18n="cadastroSubtitle">Preenche os teus dados para começar.</p>
+    <div class="field"><label data-i18n="fieldFirstName" for="regFirstName">Primeiro nome</label><input type="text" id="regFirstName"></div>
+    <div class="field"><label data-i18n="fieldLastName" for="regLastName">Último nome</label><input type="text" id="regLastName"></div>
+    <div class="field"><label data-i18n="fieldUsername" for="regUsername">Username</label><input type="text" id="regUsername" autocomplete="username"></div>
+    <div class="hint-text" data-i18n="cadastroPassHint">A tua password inicial é 12345 — podes alterá-la depois em Definições.</div>
+    <button class="primary" id="registerBtn" style="width:100%;" data-i18n="btnRegister">Cadastrar</button>
+    <div class="error-msg" id="regError"></div>
+    <button type="button" class="link-btn" id="goToLogin" data-i18n="linkHaveAccount">Já tens conta? Entra</button>
+  </div>
+</div>
+
+<div id="loginScreen" style="display:none;">
+  <button class="icon-btn top-theme-btn theme-toggle-btn" id="loginThemeToggle">🌙 Tema escuro</button>
+  <div class="login-card">
+    <h1 data-i18n="appTitle">Gestão do Negócio</h1>
+    <p data-i18n="loginSubtitle">Inicia sessão para continuar.</p>
+    <div class="field"><label data-i18n="fieldUser" for="loginUser">Utilizador</label><input type="text" id="loginUser" autocomplete="username"></div>
+    <div class="field"><label data-i18n="fieldPass" for="loginPass">Password</label>
+      <div class="password-wrap">
+        <input type="password" id="loginPass" autocomplete="current-password">
+        <button type="button" class="toggle-pass" data-target="loginPass">👁</button>
+      </div>
+    </div>
+    <button class="primary" id="loginBtn" style="width:100%;" data-i18n="btnEnter">Entrar</button>
+    <div class="error-msg" id="loginError"></div>
+    <button type="button" class="link-btn" id="goToCadastro" data-i18n="linkNoAccount">Não tens conta? Cria uma</button>
+  </div>
+</div>
+
+<div id="app">
+<div class="wrap">
+  <header class="app-header">
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+    <h1 data-i18n="appTitle">Gestão do Negócio</h1>
+    <div class="user-block" id="userBlock" title="Ver informações pessoais">
+      <div class="avatar-wrap" id="avatarWrap" title="Alterar foto">
+        <img id="avatarImg" class="avatar-img" style="display:none;" alt="">
+        <span id="avatarPlaceholder" class="avatar-placeholder">👤</span>
+      </div>
+      <span class="user-name" id="userNameDisplay"></span>
+    </div>
+  </header>
+  <input type="file" accept="image/*" id="avatarInput" style="display:none;">
+
+  <div class="app-layout">
+    <nav class="sidebar" id="sidebar">
+      <button class="nav-btn active" data-section="dashboard">📊 <span data-i18n="navDashboard">Dashboard</span></button>
+      <button class="nav-btn" data-section="fecho">🗓️ <span data-i18n="navFecho">Fecho do dia</span></button>
+      <button class="nav-btn" data-section="settings">⚙️ <span data-i18n="navSettings">Configurações</span></button>
+    </nav>
+
+    <main class="main-content">
+
+      <section id="section-dashboard" class="app-section active">
+        <div class="lucro-total-hero">
+          <div class="label" data-i18n="totalProfitLabel">Lucro Total</div>
+          <div class="value" id="totLucro">0,00 MT</div>
+        </div>
+
+        <div class="rate-bar">
+          <label data-i18n="rateLabel" for="taxa">Taxa de câmbio de hoje (1 USD =)</label>
+          <input type="number" id="taxa" step="0.01" min="0" value="63.90">
+          <span class="hint" data-i18n="rateHint">MZN — usada para converter o valor comprado em dólar</span>
+        </div>
+
+        <div class="card">
+          <h2 data-i18n="saleSectionTitle">Nova venda</h2>
+          <div class="grid">
+            <div class="field"><label data-i18n="fieldDate" for="data">Data</label><input type="date" id="data"></div>
+            <div class="field"><label data-i18n="fieldSoldUsd" for="vendaUsd">Vendido (USD)</label><input type="number" id="vendaUsd" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+            <div class="field"><label data-i18n="fieldBoughtUsd" for="compraUsd">Comprado (USD)</label><input type="number" id="compraUsd" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+            <div class="field"><label data-i18n="fieldSellPrice" for="precoVenda">Vendi cada USD a (MZN)</label><input type="number" id="precoVenda" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+          </div>
+          <div class="actions"><button class="primary" id="addBtn" data-i18n="btnAddSale">Adicionar venda</button></div>
+        </div>
+
+        <div class="totals">
+          <div class="stat"><div class="label" data-i18n="statDailyProfit">Lucro diário (MZN)</div><div class="value" id="lucroHoje">0,00 MT</div></div>
+          <div class="stat"><div class="label" data-i18n="statMonthlyProfit">Lucro mensal (MZN)</div><div class="value" id="lucroMes">0,00 MT</div></div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th data-i18n="tableDate">Data</th><th data-i18n="tableSoldUsd">Vendido (USD)</th><th data-i18n="tableBoughtUsd">Comprado (USD)</th>
+                <th data-i18n="tableCostUsd">Custo/USD (MZN)</th><th data-i18n="tableSellUsdTo">Vendi USD a (MZN)</th><th data-i18n="tableSaleTotal">Venda (MZN)</th><th data-i18n="tableProfit">Lucro (MZN)</th><th></th>
+              </tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+            <div class="empty" id="emptyMsg" data-i18n="emptySales">Ainda não há vendas registadas.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-fecho" class="app-section">
+        <div class="card">
+          <h2 data-i18n="fechoCardTitle">Somar carteiras</h2>
+          <div class="rate-bar" style="margin-top:0;">
+            <label data-i18n="fechoRateLabel" for="cambioAirtm">Câmbio AirTM (1 USD =)</label>
+            <input type="number" id="cambioAirtm" step="0.01" min="0" value="74.03">
+            <span class="hint" data-i18n="fechoRateHint">MZN — usado para converter M-Pesa/E-Mola em dólares</span>
+          </div>
+          <div class="grid" style="margin-top:14px;">
+            <div class="field"><label data-i18n="fieldDate" for="fData">Data</label><input type="date" id="fData"></div>
+            <div class="field"><label for="fPaypal">PayPal (USD)</label><input type="number" id="fPaypal" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+            <div class="field"><label for="fAirtm">AirTM (USD)</label><input type="number" id="fAirtm" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+            <div class="field"><label for="fMpesa">M-Pesa (MZN)</label><input type="number" id="fMpesa" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+            <div class="field"><label for="fEmola">E-Mola (MZN)</label><input type="number" id="fEmola" step="0.01" min="0" placeholder="0.00" inputmode="decimal"></div>
+          </div>
+          <div class="totals" style="margin-top:16px;">
+            <div class="stat"><div class="label" data-i18n="statTotalUsd">Total em Dólares (USD)</div><div class="value" id="fTotalUsd">$0.00</div></div>
+            <div class="stat"><div class="label" data-i18n="statTotalMzn">Total em Meticais (MZN)</div><div class="value" id="fTotalMzn">0,00 MT</div></div>
+          </div>
+          <div class="totals">
+            <div class="stat"><div class="label" data-i18n="statDailyGrowth">Lucro do dia (vs. dia anterior)</div><div class="value" id="fLucroDia">—</div></div>
+          </div>
+          <div class="actions"><button class="primary" id="saveFechoBtn" data-i18n="btnSaveFecho">Guardar fecho do dia</button></div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table class="mini-table">
+              <thead><tr><th data-i18n="tableDate">Data</th><th data-i18n="fechoTableTotalUsd">Total (USD)</th><th data-i18n="fechoTableTotalMzn">Total (MZN)</th><th data-i18n="fechoTableProfit">Lucro do dia (USD)</th><th data-i18n="fechoTableProfitMzn">Lucro do dia (MZN)</th><th></th></tr></thead>
+              <tbody id="fechoBody"></tbody>
+            </table>
+            <div class="empty" id="fechoEmpty" data-i18n="emptyFechos">Ainda não há fechos guardados.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-settings" class="app-section">
+        <div class="card">
+          <h2 data-i18n="settingsTitle">Definições</h2>
+          <div class="field" style="margin-bottom:14px;max-width:280px;">
+            <label data-i18n="labelLanguage">Idioma</label>
+            <select id="langSelect">
+              <option value="pt">Português</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="ts">Xitsonga</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0;max-width:280px;">
+            <label data-i18n="labelTheme">Tema</label>
+            <button class="icon-btn theme-toggle-btn" id="themeToggle" style="width:100%;">🌙 Tema escuro</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 data-i18n="personalInfoTitle">Informações pessoais</h2>
+          <div class="hint-text" id="personalCurrentInfo" style="margin-top:-4px;"></div>
+          <div class="grid grid-3">
+            <div class="field"><label data-i18n="fieldFirstName" for="editFirstName">Primeiro nome</label><input type="text" id="editFirstName"></div>
+            <div class="field"><label data-i18n="fieldLastName" for="editLastName">Último nome</label><input type="text" id="editLastName"></div>
+            <div class="field"><label data-i18n="fieldUsername" for="editUsername">Username</label><input type="text" id="editUsername" autocomplete="username"></div>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="changePassBtn" data-i18n="btnChangePass">Alterar password</button>
+            <button class="primary" id="savePersonalBtn" data-i18n="btnSave">Guardar</button>
+          </div>
+          <div class="success-msg" id="personalSuccess"></div>
+        </div>
+
+        <div class="card" id="changePassCard" style="display:none;">
+          <h2 data-i18n="changePassTitle">Alterar password</h2>
+          <div class="grid grid-3">
+            <div class="field"><label data-i18n="fieldCurrentPass" for="passAtual">Password atual</label>
+              <div class="password-wrap">
+                <input type="password" id="passAtual" autocomplete="current-password">
+                <button type="button" class="toggle-pass" data-target="passAtual">👁</button>
+              </div>
+            </div>
+            <div class="field"><label data-i18n="fieldNewPass" for="passNova">Nova password</label>
+              <div class="password-wrap">
+                <input type="password" id="passNova" autocomplete="new-password">
+                <button type="button" class="toggle-pass" data-target="passNova">👁</button>
+              </div>
+            </div>
+            <div class="field"><label data-i18n="fieldConfirmPass" for="passNova2">Confirmar nova password</label>
+              <div class="password-wrap">
+                <input type="password" id="passNova2" autocomplete="new-password">
+                <button type="button" class="toggle-pass" data-target="passNova2">👁</button>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="cancelPassBtn" data-i18n="btnCancel">Cancelar</button>
+            <button class="primary" id="savePassBtn" data-i18n="btnSave">Guardar</button>
+          </div>
+          <div class="error-msg" id="passError"></div>
+          <div class="success-msg" id="passSuccess"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<button class="logout-fixed" id="logoutBtn">🚪 <span data-i18n="btnLogout">Sair</span></button>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ---- Traduções ---- */
+const I18N = {
+pt:{statDailyGrowth:"Lucro do dia (vs. dia anterior)",fechoTableProfitMzn:"Lucro do dia (MZN)",personalCurrent:"Atual:",personalInfoTitle:"Informações pessoais",successPersonalUpdated:"Informações atualizadas com sucesso.",navDashboard:"Dashboard",navFecho:"Fecho do dia",navSettings:"Configurações",linkNoAccount:"Não tens conta? Cria uma",linkHaveAccount:"Já tens conta? Entra",appTitle:"Gestão do Negócio",appSubtitle:"Regista as tuas vendas e acompanha o lucro em Metical.",loginSubtitle:"Inicia sessão para continuar.",fieldUser:"Utilizador",fieldPass:"Password",btnEnter:"Entrar",errorWrongLogin:"Utilizador ou password incorretos.",errorLockout:"Demasiadas tentativas. Tenta novamente em {s}s.",cadastroTitle:"Criar conta",cadastroSubtitle:"Preenche os teus dados para começar.",fieldFirstName:"Primeiro nome",fieldLastName:"Último nome",fieldUsername:"Username",cadastroPassHint:"A tua password inicial é 12345 — podes alterá-la depois em Definições.",btnRegister:"Cadastrar",successRegistered:"Cadastro efetuado com sucesso.",errorFillAll:"Preenche todos os campos.",btnSettings:"Definições",settingsTitle:"Definições",labelLanguage:"Idioma",labelTheme:"Tema",themeLight:"Claro",themeDark:"Escuro",btnChangePass:"Alterar password",btnLogout:"Sair",changePassTitle:"Alterar password",fieldCurrentPass:"Password atual",fieldNewPass:"Nova password",fieldConfirmPass:"Confirmar nova password",btnSave:"Guardar",btnCancel:"Cancelar",successPassChanged:"Password alterada com sucesso.",errorWrongCurrentPass:"Password atual incorreta.",errorPassLength:"A nova password deve ter pelo menos 4 caracteres.",errorPassMismatch:"As passwords novas não coincidem.",rateLabel:"Taxa de câmbio de hoje (1 USD =)",rateHint:"MZN — usada para converter o valor comprado em dólar",saleSectionTitle:"Nova venda",fieldDate:"Data",fieldSoldUsd:"Vendido (USD)",fieldBoughtUsd:"Comprado (USD)",fieldSellPrice:"Vendi cada USD a (MZN)",btnAddSale:"Adicionar venda",successSaleAdded:"Venda adicionada com sucesso.",errorFillSale:"Preenche pelo menos um valor antes de adicionar.",statDailyProfit:"Lucro diário (MZN)",statMonthlyProfit:"Lucro mensal (MZN)",totalProfitLabel:"Lucro Total",tableDate:"Data",tableSoldUsd:"Vendido (USD)",tableBoughtUsd:"Comprado (USD)",tableCostUsd:"Custo/USD (MZN)",tableSellUsdTo:"Vendi USD a (MZN)",tableSaleTotal:"Venda (MZN)",tableProfit:"Lucro (MZN)",tableRemove:"Remover",emptySales:"Ainda não há vendas registadas.",confirmDeleteSale:"Tens a certeza que queres remover este registo?",toastSaleRemoved:"Registo removido.",fechoSectionTitle:"Fecho do dia",fechoCardTitle:"Somar carteiras",fechoRateLabel:"Câmbio AirTM (1 USD =)",fechoRateHint:"MZN — usado para converter M-Pesa/E-Mola em dólares",statTotalUsd:"Total em Dólares (USD)",statTotalMzn:"Total em Meticais (MZN)",btnSaveFecho:"Guardar fecho do dia",successFechoSaved:"Fecho do dia guardado com sucesso.",fechoTableTotalUsd:"Total (USD)",fechoTableTotalMzn:"Total (MZN)",fechoTableProfit:"Lucro do dia (USD)",emptyFechos:"Ainda não há fechos guardados.",confirmDeleteFecho:"Tens a certeza que queres remover este fecho?",toastFechoRemoved:"Fecho removido."},
+en:{statDailyGrowth:"Daily profit (vs. previous day)",fechoTableProfitMzn:"Daily profit (MZN)",personalCurrent:"Current:",personalInfoTitle:"Personal information",successPersonalUpdated:"Information updated successfully.",navDashboard:"Dashboard",navFecho:"End of day",navSettings:"Settings",linkNoAccount:"No account? Create one",linkHaveAccount:"Already have an account? Sign in",appTitle:"Business Management",appSubtitle:"Record your sales and track your profit in Metical.",loginSubtitle:"Sign in to continue.",fieldUser:"Username",fieldPass:"Password",btnEnter:"Sign In",errorWrongLogin:"Incorrect username or password.",errorLockout:"Too many attempts. Try again in {s}s.",cadastroTitle:"Create Account",cadastroSubtitle:"Fill in your details to get started.",fieldFirstName:"First name",fieldLastName:"Last name",fieldUsername:"Username",cadastroPassHint:"Your initial password is 12345 — you can change it later in Settings.",btnRegister:"Register",successRegistered:"Registration completed successfully.",errorFillAll:"Fill in all fields.",btnSettings:"Settings",settingsTitle:"Settings",labelLanguage:"Language",labelTheme:"Theme",themeLight:"Light",themeDark:"Dark",btnChangePass:"Change password",btnLogout:"Log out",changePassTitle:"Change password",fieldCurrentPass:"Current password",fieldNewPass:"New password",fieldConfirmPass:"Confirm new password",btnSave:"Save",btnCancel:"Cancel",successPassChanged:"Password changed successfully.",errorWrongCurrentPass:"Current password is incorrect.",errorPassLength:"New password must be at least 4 characters.",errorPassMismatch:"New passwords do not match.",rateLabel:"Today's exchange rate (1 USD =)",rateHint:"MZN — used to convert the amount bought in dollars",saleSectionTitle:"New sale",fieldDate:"Date",fieldSoldUsd:"Sold (USD)",fieldBoughtUsd:"Bought (USD)",fieldSellPrice:"Sold each USD at (MZN)",btnAddSale:"Add sale",successSaleAdded:"Sale added successfully.",errorFillSale:"Fill in at least one value before adding.",statDailyProfit:"Daily profit (MZN)",statMonthlyProfit:"Monthly profit (MZN)",totalProfitLabel:"Total Profit",tableDate:"Date",tableSoldUsd:"Sold (USD)",tableBoughtUsd:"Bought (USD)",tableCostUsd:"Cost/USD (MZN)",tableSellUsdTo:"Sold USD at (MZN)",tableSaleTotal:"Sale (MZN)",tableProfit:"Profit (MZN)",tableRemove:"Remove",emptySales:"No sales recorded yet.",confirmDeleteSale:"Are you sure you want to remove this record?",toastSaleRemoved:"Record removed.",fechoSectionTitle:"End of day",fechoCardTitle:"Sum wallets",fechoRateLabel:"AirTM rate (1 USD =)",fechoRateHint:"MZN — used to convert M-Pesa/E-Mola into dollars",statTotalUsd:"Total in Dollars (USD)",statTotalMzn:"Total in Metical (MZN)",btnSaveFecho:"Save end of day",successFechoSaved:"End of day saved successfully.",fechoTableTotalUsd:"Total (USD)",fechoTableTotalMzn:"Total (MZN)",fechoTableProfit:"Daily profit (USD)",emptyFechos:"No end-of-day records saved yet.",confirmDeleteFecho:"Are you sure you want to remove this record?",toastFechoRemoved:"Record removed."},
+es:{statDailyGrowth:"Ganancia del día (vs. día anterior)",fechoTableProfitMzn:"Ganancia del día (MZN)",personalCurrent:"Actual:",personalInfoTitle:"Información personal",successPersonalUpdated:"Información actualizada con éxito.",navDashboard:"Dashboard",navFecho:"Cierre del día",navSettings:"Ajustes",linkNoAccount:"¿No tienes cuenta? Crea una",linkHaveAccount:"¿Ya tienes cuenta? Entra",appTitle:"Gestión del Negocio",appSubtitle:"Registra tus ventas y sigue tu ganancia en Metical.",loginSubtitle:"Inicia sesión para continuar.",fieldUser:"Usuario",fieldPass:"Contraseña",btnEnter:"Entrar",errorWrongLogin:"Usuario o contraseña incorrectos.",errorLockout:"Demasiados intentos. Intenta de nuevo en {s}s.",cadastroTitle:"Crear cuenta",cadastroSubtitle:"Completa tus datos para empezar.",fieldFirstName:"Nombre",fieldLastName:"Apellido",fieldUsername:"Usuario",cadastroPassHint:"Tu contraseña inicial es 12345 — puedes cambiarla después en Ajustes.",btnRegister:"Registrar",successRegistered:"Registro completado con éxito.",errorFillAll:"Completa todos los campos.",btnSettings:"Ajustes",settingsTitle:"Ajustes",labelLanguage:"Idioma",labelTheme:"Tema",themeLight:"Claro",themeDark:"Oscuro",btnChangePass:"Cambiar contraseña",btnLogout:"Cerrar sesión",changePassTitle:"Cambiar contraseña",fieldCurrentPass:"Contraseña actual",fieldNewPass:"Nueva contraseña",fieldConfirmPass:"Confirmar nueva contraseña",btnSave:"Guardar",btnCancel:"Cancelar",successPassChanged:"Contraseña cambiada con éxito.",errorWrongCurrentPass:"Contraseña actual incorrecta.",errorPassLength:"La nueva contraseña debe tener al menos 4 caracteres.",errorPassMismatch:"Las nuevas contraseñas no coinciden.",rateLabel:"Tipo de cambio de hoy (1 USD =)",rateHint:"MZN — usado para convertir el valor comprado en dólares",saleSectionTitle:"Nueva venta",fieldDate:"Fecha",fieldSoldUsd:"Vendido (USD)",fieldBoughtUsd:"Comprado (USD)",fieldSellPrice:"Vendí cada USD a (MZN)",btnAddSale:"Añadir venta",successSaleAdded:"Venta añadida con éxito.",errorFillSale:"Completa al menos un valor antes de añadir.",statDailyProfit:"Ganancia diaria (MZN)",statMonthlyProfit:"Ganancia mensual (MZN)",totalProfitLabel:"Ganancia Total",tableDate:"Fecha",tableSoldUsd:"Vendido (USD)",tableBoughtUsd:"Comprado (USD)",tableCostUsd:"Costo/USD (MZN)",tableSellUsdTo:"Vendí USD a (MZN)",tableSaleTotal:"Venta (MZN)",tableProfit:"Ganancia (MZN)",tableRemove:"Eliminar",emptySales:"Aún no hay ventas registradas.",confirmDeleteSale:"¿Estás seguro de que quieres eliminar este registro?",toastSaleRemoved:"Registro eliminado.",fechoSectionTitle:"Cierre del día",fechoCardTitle:"Sumar billeteras",fechoRateLabel:"Tipo de cambio AirTM (1 USD =)",fechoRateHint:"MZN — usado para convertir M-Pesa/E-Mola en dólares",statTotalUsd:"Total en Dólares (USD)",statTotalMzn:"Total en Metical (MZN)",btnSaveFecho:"Guardar cierre del día",successFechoSaved:"Cierre del día guardado con éxito.",fechoTableTotalUsd:"Total (USD)",fechoTableTotalMzn:"Total (MZN)",fechoTableProfit:"Ganancia del día (USD)",emptyFechos:"Aún no hay cierres guardados.",confirmDeleteFecho:"¿Estás seguro de que quieres eliminar este cierre?",toastFechoRemoved:"Cierre eliminado."},
+fr:{statDailyGrowth:"Profit du jour (vs. jour précédent)",fechoTableProfitMzn:"Profit du jour (MZN)",personalCurrent:"Actuel :",personalInfoTitle:"Informations personnelles",successPersonalUpdated:"Informations mises à jour avec succès.",navDashboard:"Tableau de bord",navFecho:"Clôture du jour",navSettings:"Paramètres",linkNoAccount:"Pas de compte ? Créez-en un",linkHaveAccount:"Déjà un compte ? Connectez-vous",appTitle:"Gestion de l'Entreprise",appSubtitle:"Enregistrez vos ventes et suivez votre profit en Metical.",loginSubtitle:"Connectez-vous pour continuer.",fieldUser:"Utilisateur",fieldPass:"Mot de passe",btnEnter:"Se connecter",errorWrongLogin:"Nom d'utilisateur ou mot de passe incorrect.",errorLockout:"Trop de tentatives. Réessayez dans {s}s.",cadastroTitle:"Créer un compte",cadastroSubtitle:"Remplissez vos informations pour commencer.",fieldFirstName:"Prénom",fieldLastName:"Nom de famille",fieldUsername:"Nom d'utilisateur",cadastroPassHint:"Votre mot de passe initial est 12345 — vous pouvez le changer plus tard dans les Paramètres.",btnRegister:"S'inscrire",successRegistered:"Inscription réussie.",errorFillAll:"Remplissez tous les champs.",btnSettings:"Paramètres",settingsTitle:"Paramètres",labelLanguage:"Langue",labelTheme:"Thème",themeLight:"Clair",themeDark:"Sombre",btnChangePass:"Changer le mot de passe",btnLogout:"Se déconnecter",changePassTitle:"Changer le mot de passe",fieldCurrentPass:"Mot de passe actuel",fieldNewPass:"Nouveau mot de passe",fieldConfirmPass:"Confirmer le nouveau mot de passe",btnSave:"Enregistrer",btnCancel:"Annuler",successPassChanged:"Mot de passe changé avec succès.",errorWrongCurrentPass:"Mot de passe actuel incorrect.",errorPassLength:"Le nouveau mot de passe doit contenir au moins 4 caractères.",errorPassMismatch:"Les nouveaux mots de passe ne correspondent pas.",rateLabel:"Taux de change du jour (1 USD =)",rateHint:"MZN — utilisé pour convertir le montant acheté en dollars",saleSectionTitle:"Nouvelle vente",fieldDate:"Date",fieldSoldUsd:"Vendu (USD)",fieldBoughtUsd:"Acheté (USD)",fieldSellPrice:"USD vendu à (MZN)",btnAddSale:"Ajouter une vente",successSaleAdded:"Vente ajoutée avec succès.",errorFillSale:"Remplissez au moins une valeur avant d'ajouter.",statDailyProfit:"Profit quotidien (MZN)",statMonthlyProfit:"Profit mensuel (MZN)",totalProfitLabel:"Profit Total",tableDate:"Date",tableSoldUsd:"Vendu (USD)",tableBoughtUsd:"Acheté (USD)",tableCostUsd:"Coût/USD (MZN)",tableSellUsdTo:"USD vendu à (MZN)",tableSaleTotal:"Vente (MZN)",tableProfit:"Profit (MZN)",tableRemove:"Supprimer",emptySales:"Aucune vente enregistrée pour le moment.",confirmDeleteSale:"Êtes-vous sûr de vouloir supprimer cet enregistrement ?",toastSaleRemoved:"Enregistrement supprimé.",fechoSectionTitle:"Clôture du jour",fechoCardTitle:"Additionner les portefeuilles",fechoRateLabel:"Taux AirTM (1 USD =)",fechoRateHint:"MZN — utilisé pour convertir M-Pesa/E-Mola en dollars",statTotalUsd:"Total en Dollars (USD)",statTotalMzn:"Total en Metical (MZN)",btnSaveFecho:"Enregistrer la clôture du jour",successFechoSaved:"Clôture du jour enregistrée avec succès.",fechoTableTotalUsd:"Total (USD)",fechoTableTotalMzn:"Total (MZN)",fechoTableProfit:"Profit du jour (USD)",emptyFechos:"Aucune clôture enregistrée pour le moment.",confirmDeleteFecho:"Êtes-vous sûr de vouloir supprimer cette clôture ?",toastFechoRemoved:"Clôture supprimée."},
+ts:{statDailyGrowth:"Nyuku wa siku (na siku ro hundza)",fechoTableProfitMzn:"Nyuku wa siku (MZN)",personalCurrent:"Sweswi:",personalInfoTitle:"Vuxokoxoko bya wena",successPersonalUpdated:"Vuxokoxoko byi cinciwile kahle.",navDashboard:"Dashboard",navFecho:"Ku pfala ka siku",navSettings:"Tinhlamuselo",linkNoAccount:"A wu na akhawunta? Endla yin'wana",linkHaveAccount:"U na akhawunta ke? Ngena",appTitle:"Vulawuri bya Bindzu",appSubtitle:"Tsala switurhisiwa swa wena u languta nyuku wa wena hi Metical.",loginSubtitle:"Ngena u ya emahlweni.",fieldUser:"Muitirhisi",fieldPass:"Xivulavulelo",btnEnter:"Ngena",errorWrongLogin:"Muitirhisi kumbe xivulavulelo a swi hlamuseriwangi kahle.",errorLockout:"Ku ringeta ko tala. Ringeta nakambe hi {s}s.",cadastroTitle:"Endla akhawunta",cadastroSubtitle:"Tatisa vuxokoxoko bya wena leswaku u sungula.",fieldFirstName:"Vito ro sungula",fieldLastName:"Vito ro hetelela",fieldUsername:"Vito ro tirhisa",cadastroPassHint:"Xivulavulelo xa wena xo sungula i 12345 — u nga xi cinca endzhaku eka Tinhlamuselo.",btnRegister:"Tsarisa",successRegistered:"Ku tsarisa ku endlekile kahle.",errorFillAll:"Tatisa hinkwako ka switandzu.",btnSettings:"Tinhlamuselo",settingsTitle:"Tinhlamuselo",labelLanguage:"Ririmi",labelTheme:"Tema",themeLight:"Ku vonakala",themeDark:"Munyama",btnChangePass:"Cinca xivulavulelo",btnLogout:"Huma",changePassTitle:"Cinca xivulavulelo",fieldCurrentPass:"Xivulavulelo xa sweswi",fieldNewPass:"Xivulavulelo lexintshwa",fieldConfirmPass:"Tiyisisa xivulavulelo lexintshwa",btnSave:"Hlayisa",btnCancel:"Kanela",successPassChanged:"Xivulavulelo xi cincile kahle.",errorWrongCurrentPass:"Xivulavulelo xa sweswi a xi hlamuseriwangi kahle.",errorPassLength:"Xivulavulelo lexintshwa xi fanele xiva ni tinhlamba ta 4 kumbe ku tlula.",errorPassMismatch:"Swivulavulelo leswintshwa a swi fani.",rateLabel:"Nhundzu ya manguva lawa (1 USD =)",rateHint:"MZN — yi tirhisiwa ku cinca nkoka lowu xaviweke hi dollar",saleSectionTitle:"Ku xavisa loku ntshwa",fieldDate:"Siku",fieldSoldUsd:"Xavisiwile (USD)",fieldBoughtUsd:"Xaviwile (USD)",fieldSellPrice:"Ndzi xavise USD yin'wana na yin'wana hi (MZN)",btnAddSale:"Engetela ku xavisa",successSaleAdded:"Ku xavisa ku engeteriwile kahle.",errorFillSale:"Tatisa ku hava xin'wana u nga si engetela.",statDailyProfit:"Nyuku wa siku (MZN)",statMonthlyProfit:"Nyuku wa n'hweti (MZN)",totalProfitLabel:"Nyuku Hinkwawo",tableDate:"Siku",tableSoldUsd:"Xavisiwile (USD)",tableBoughtUsd:"Xaviwile (USD)",tableCostUsd:"Nkoka/USD (MZN)",tableSellUsdTo:"USD leyi xavisiweke hi (MZN)",tableSaleTotal:"Ku xavisa (MZN)",tableProfit:"Nyuku (MZN)",tableRemove:"Susa",emptySales:"A ku si va na ku xavisa loku tsariweke.",confirmDeleteSale:"Xana u tiyisekile leswaku u lava ku susa rhekhodo leyi?",toastSaleRemoved:"Rhekhodo yi susiwile.",fechoSectionTitle:"Ku pfala ka siku",fechoCardTitle:"Hlanganisa tikhwama",fechoRateLabel:"Nhundzu ya AirTM (1 USD =)",fechoRateHint:"MZN — yi tirhisiwa ku cinca M-Pesa/E-Mola yiva dollar",statTotalUsd:"Nhlanganiso hi Dollar (USD)",statTotalMzn:"Nhlanganiso hi Metical (MZN)",btnSaveFecho:"Hlayisa ku pfala ka siku",successFechoSaved:"Ku pfala ka siku ku hlayisiwile kahle.",fechoTableTotalUsd:"Nhlanganiso (USD)",fechoTableTotalMzn:"Nhlanganiso (MZN)",fechoTableProfit:"Nyuku wa siku (USD)",emptyFechos:"A ku si va na ku pfala loku hlayisiweke.",confirmDeleteFecho:"Xana u tiyisekile leswaku u lava ku susa ku pfala loku?",toastFechoRemoved:"Ku pfala ku susiwile."}
+};
+let currentLang = 'pt';
+function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || I18N.pt[key] || key; }
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.documentElement.lang = currentLang;
+  applyThemeLabels();
+}
+document.getElementById('langSelect').addEventListener('change', (e)=>{
+  currentLang = e.target.value;
+  try{ localStorage.setItem('gn_lang', currentLang); }catch(e){}
+  applyI18n();
+  render();
+  renderFechoHistorico();
+});
+(function initLang(){
+  let saved;
+  try{ saved = localStorage.getItem('gn_lang'); }catch(e){}
+  currentLang = saved && I18N[saved] ? saved : 'pt';
+  document.getElementById('langSelect').value = currentLang;
+})();
+
+/* ---- Mostrar/ocultar password ---- */
+document.querySelectorAll('.toggle-pass').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const input = document.getElementById(btn.dataset.target);
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.textContent = showing ? '👁' : '🙈';
+  });
+});
+
+/* ---- Toast ---- */
+function showToast(msg, isError){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' err' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 2600);
+}
+
+/* ---- Hash simples (SHA-256) com fallback ---- */
+async function hashText(str){
+  try{
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){
+    return 'plain:' + str;
+  }
+}
+
+/* ---- Autenticação / Cadastro ---- */
+async function migrateOldPass(){
+  try{
+    const oldPlain = localStorage.getItem('gn_pass');
+    if(oldPlain && !localStorage.getItem('gn_pass_hash')){
+      localStorage.setItem('gn_pass_hash', await hashText(oldPlain));
+      localStorage.removeItem('gn_pass');
+    }
+  }catch(e){}
+}
+function getLockout(){
+  try{ return JSON.parse(sessionStorage.getItem('gn_lock') || '{"count":0,"until":0}'); }catch(e){ return {count:0,until:0}; }
+}
+function setLockout(v){ try{ sessionStorage.setItem('gn_lock', JSON.stringify(v)); }catch(e){} }
+
+async function checkLogin(){
+  let hasUser;
+  try{ hasUser = !!localStorage.getItem('gn_user'); }catch(e){ hasUser = false; }
+  if(!hasUser){
+    document.getElementById('cadastroScreen').style.display='flex';
+    return;
+  }
+  await migrateOldPass();
+  const authed = sessionStorage.getItem('gn_authed') === 'true';
+  if(authed){ showApp(); } else { document.getElementById('loginScreen').style.display='flex'; }
+}
+function showApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('cadastroScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  try{
+    const first = localStorage.getItem('gn_firstName') || '';
+    const last = localStorage.getItem('gn_lastName') || '';
+    const uname = localStorage.getItem('gn_user') || '';
+    const full = (first + ' ' + last).trim();
+    document.getElementById('userNameDisplay').textContent = full || uname;
+    document.getElementById('editFirstName').placeholder = first;
+    document.getElementById('editLastName').placeholder = last;
+    document.getElementById('editUsername').placeholder = uname;
+    updatePersonalCurrentInfo(first, last, uname);
+    setAvatarDisplay(localStorage.getItem('gn_avatar'));
+  }catch(e){}
+  loadData(); render();
+  loadFecho(); renderFecho(); renderFechoHistorico();
+}
+
+document.getElementById('registerBtn').addEventListener('click', async ()=>{
+  const first = document.getElementById('regFirstName').value.trim();
+  const last = document.getElementById('regLastName').value.trim();
+  const username = document.getElementById('regUsername').value.trim();
+  const errEl = document.getElementById('regError');
+  if(!first || !last || !username){ errEl.textContent = t('errorFillAll'); return; }
+  try{
+    localStorage.setItem('gn_firstName', first);
+    localStorage.setItem('gn_lastName', last);
+    localStorage.setItem('gn_user', username);
+    localStorage.setItem('gn_pass_hash', await hashText('12345'));
+  }catch(e){}
+  errEl.textContent='';
+  document.getElementById('cadastroScreen').style.display='none';
+  document.getElementById('loginUser').value = username;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginPass').focus();
+  showToast(t('successRegistered'));
+});
+
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  const errEl = document.getElementById('loginError');
+  const lock = getLockout();
+  if(lock.until > Date.now()){
+    const secs = Math.ceil((lock.until - Date.now())/1000);
+    errEl.textContent = t('errorLockout').replace('{s}', secs);
+    return;
+  }
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  let storedUser, storedHash;
+  try{ storedUser = localStorage.getItem('gn_user'); storedHash = localStorage.getItem('gn_pass_hash'); }catch(e){}
+  const hash = await hashText(p);
+  if(u === storedUser && hash === storedHash){
+    try{ sessionStorage.setItem('gn_authed','true'); }catch(e){}
+    setLockout({count:0, until:0});
+    errEl.textContent='';
+    showApp();
+  }else{
+    const count = lock.count + 1;
+    if(count >= 5){
+      setLockout({count:0, until: Date.now() + 30000});
+      errEl.textContent = t('errorLockout').replace('{s}', 30);
+    }else{
+      setLockout({count, until:0});
+      errEl.textContent = t('errorWrongLogin');
+    }
+  }
+});
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('loginBtn').click(); });
+document.getElementById('goToCadastro').addEventListener('click', ()=>{
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('regError').textContent='';
+  document.getElementById('cadastroScreen').style.display='flex';
+});
+document.getElementById('goToLogin').addEventListener('click', ()=>{
+  document.getElementById('cadastroScreen').style.display='none';
+  document.getElementById('loginError').textContent='';
+  document.getElementById('loginScreen').style.display='flex';
+});
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  try{ sessionStorage.removeItem('gn_authed'); }catch(e){}
+  document.getElementById('app').style.display='none';
+  document.getElementById('changePassCard').style.display='none';
+  document.querySelectorAll('.nav-btn').forEach(b=> b.classList.remove('active'));
+  document.querySelectorAll('.app-section').forEach(s=> s.classList.remove('active'));
+  document.querySelector('.nav-btn[data-section="dashboard"]').classList.add('active');
+  document.getElementById('section-dashboard').classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginScreen').style.display='flex';
+});
+
+/* ---- Foto de perfil ---- */
+function setAvatarDisplay(dataUrl){
+  const img = document.getElementById('avatarImg');
+  const ph = document.getElementById('avatarPlaceholder');
+  if(dataUrl){ img.src = dataUrl; img.style.display='block'; ph.style.display='none'; }
+  else{ img.style.display='none'; ph.style.display='block'; }
+}
+document.getElementById('avatarWrap').addEventListener('click', ()=>{
+  document.getElementById('avatarInput').click();
+});
+document.getElementById('avatarInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxSize = 240;
+      let w = img.width, h = img.height;
+      if(w > h){ if(w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; } }
+      else{ if(h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; } }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      try{ localStorage.setItem('gn_avatar', dataUrl); }catch(err){}
+      setAvatarDisplay(dataUrl);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+/* ---- Navegação (menu lateral / hambúrguer) ---- */
+document.getElementById('menuToggle').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+});
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=> b.classList.remove('active'));
+    document.querySelectorAll('.app-section').forEach(s=> s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('section-'+btn.dataset.section).classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+/* ---- Informações pessoais ---- */
+function updatePersonalCurrentInfo(first, last, uname){
+  const el = document.getElementById('personalCurrentInfo');
+  const full = (first + ' ' + last).trim();
+  el.textContent = t('personalCurrent') + ' ' + (full || '—') + ' (@' + (uname || '—') + ')';
+}
+let lastSectionBeforeName = null;
+document.getElementById('userBlock').addEventListener('click', ()=>{
+  const isSettingsActive = document.getElementById('section-settings').classList.contains('active');
+  if(isSettingsActive && lastSectionBeforeName){
+    document.querySelector('.nav-btn[data-section="'+lastSectionBeforeName+'"]').click();
+    lastSectionBeforeName = null;
+  }else{
+    const activeBtn = document.querySelector('.nav-btn.active');
+    lastSectionBeforeName = activeBtn ? activeBtn.dataset.section : 'dashboard';
+    document.querySelector('.nav-btn[data-section="settings"]').click();
+  }
+});
+document.getElementById('savePersonalBtn').addEventListener('click', ()=>{
+  const first = document.getElementById('editFirstName').value.trim();
+  const last = document.getElementById('editLastName').value.trim();
+  const username = document.getElementById('editUsername').value.trim();
+  const okEl = document.getElementById('personalSuccess');
+  if(!first && !last && !username){ showToast(t('errorFillAll'), true); return; }
+  let curFirst, curLast, curUser;
+  try{
+    curFirst = localStorage.getItem('gn_firstName') || '';
+    curLast = localStorage.getItem('gn_lastName') || '';
+    curUser = localStorage.getItem('gn_user') || '';
+  }catch(e){}
+  const newFirst = first || curFirst;
+  const newLast = last || curLast;
+  const newUser = username || curUser;
+  try{
+    localStorage.setItem('gn_firstName', newFirst);
+    localStorage.setItem('gn_lastName', newLast);
+    localStorage.setItem('gn_user', newUser);
+  }catch(e){}
+  document.getElementById('userNameDisplay').textContent = (newFirst + ' ' + newLast).trim();
+  document.getElementById('editFirstName').value = '';
+  document.getElementById('editLastName').value = '';
+  document.getElementById('editUsername').value = '';
+  document.getElementById('editFirstName').placeholder = newFirst;
+  document.getElementById('editLastName').placeholder = newLast;
+  document.getElementById('editUsername').placeholder = newUser;
+  updatePersonalCurrentInfo(newFirst, newLast, newUser);
+  okEl.textContent = t('successPersonalUpdated');
+  showToast(t('successPersonalUpdated'));
+});
+
+/* ---- Alterar password ---- */
+const changePassCard = document.getElementById('changePassCard');
+document.getElementById('changePassBtn').addEventListener('click', ()=>{
+  changePassCard.style.display = changePassCard.style.display==='none' ? 'block' : 'none';
+  document.getElementById('passError').textContent='';
+  document.getElementById('passSuccess').textContent='';
+});
+document.getElementById('cancelPassBtn').addEventListener('click', ()=>{ changePassCard.style.display='none'; });
+document.getElementById('savePassBtn').addEventListener('click', async ()=>{
+  const atual = document.getElementById('passAtual').value;
+  const nova = document.getElementById('passNova').value;
+  const nova2 = document.getElementById('passNova2').value;
+  const errEl = document.getElementById('passError');
+  const okEl = document.getElementById('passSuccess');
+  errEl.textContent=''; okEl.textContent='';
+  let storedHash;
+  try{ storedHash = localStorage.getItem('gn_pass_hash'); }catch(e){}
+  const atualHash = await hashText(atual);
+  if(atualHash !== storedHash){ errEl.textContent = t('errorWrongCurrentPass'); return; }
+  if(!nova || nova.length < 4){ errEl.textContent = t('errorPassLength'); return; }
+  if(nova !== nova2){ errEl.textContent = t('errorPassMismatch'); return; }
+  try{ localStorage.setItem('gn_pass_hash', await hashText(nova)); }catch(e){}
+  okEl.textContent = t('successPassChanged');
+  showToast(t('successPassChanged'));
+  document.getElementById('passAtual').value='';
+  document.getElementById('passNova').value='';
+  document.getElementById('passNova2').value='';
+});
+
+/* ---- Tema ---- */
+function applyThemeLabels(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const label = (cur==='dark' ? '☀️ ' + t('themeLight') : '🌙 ' + t('themeDark'));
+  document.querySelectorAll('.theme-toggle-btn').forEach(b=>{ b.textContent = label; });
+}
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  applyThemeLabels();
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  try{ localStorage.setItem('gn_theme', next); }catch(e){}
+  applyTheme(next);
+}
+document.querySelectorAll('.theme-toggle-btn').forEach(b=> b.addEventListener('click', toggleTheme));
+(function initTheme(){
+  let saved;
+  try{ saved = localStorage.getItem('gn_theme'); }catch(e){}
+  if(!saved){ saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+  applyTheme(saved);
+})();
+
+/* ---- Dados de vendas ---- */
+let sales = [];
+const taxaInput = document.getElementById('taxa');
+const dataInput = document.getElementById('data');
+dataInput.value = new Date().toISOString().slice(0,10);
+
+function loadData(){
+  try{
+    const s = localStorage.getItem('gn_sales');
+    const tx = localStorage.getItem('gn_taxa');
+    sales = s ? JSON.parse(s) : [];
+    if(tx) taxaInput.value = tx;
+  }catch(e){ sales = []; }
+}
+function saveData(){
+  try{
+    localStorage.setItem('gn_sales', JSON.stringify(sales));
+    localStorage.setItem('gn_taxa', taxaInput.value);
+  }catch(e){}
+}
+function fmtUsd(n){ return '$' + n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtMzn(n){ return n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' MT'; }
+function lucroDe(s){ return (s.vendaUsd * s.precoVenda) - (s.compraUsd * s.taxa); }
+
+function render(){
+  const tbody = document.getElementById('tbody');
+  const emptyMsg = document.getElementById('emptyMsg');
+  tbody.innerHTML = '';
+  emptyMsg.style.display = sales.length === 0 ? 'block' : 'none';
+
+  let totLucro = 0;
+  const today = new Date().toISOString().slice(0,10);
+  const curMonth = today.slice(0,7);
+  let lucroHoje = 0, lucroMes = 0;
+
+  sales.forEach((s, idx) => {
+    const lucro = lucroDe(s);
+    totLucro += lucro;
+    const d = s.data || '—';
+    const m = d !== '—' ? d.slice(0,7) : '—';
+    if(d === today) lucroHoje += lucro;
+    if(m === curMonth) lucroMes += lucro;
+
+    const custoUsdBase = s.vendaUsd > 0 ? s.vendaUsd : s.compraUsd;
+    const custoPorUsd = custoUsdBase > 0 ? (s.compraUsd * s.taxa) / custoUsdBase : 0;
+    const vendaMzn = s.vendaUsd * s.precoVenda;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${d}</td>
+      <td class="num">${fmtUsd(s.vendaUsd)}</td>
+      <td class="num">${fmtUsd(s.compraUsd)}</td>
+      <td class="num">${fmtMzn(custoPorUsd)}</td>
+      <td class="num">${fmtMzn(s.precoVenda)}</td>
+      <td class="num">${fmtMzn(vendaMzn)}</td>
+      <td class="num ${lucro>=0?'pos':'neg'}">${fmtMzn(lucro)}</td>
+      <td class="num"><button class="del" data-idx="${idx}">${t('tableRemove')}</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const totEl = document.getElementById('totLucro');
+  totEl.textContent = fmtMzn(totLucro); totEl.className = 'value'+(totLucro<0?' neg':'');
+  const hojeEl = document.getElementById('lucroHoje');
+  hojeEl.textContent = fmtMzn(lucroHoje); hojeEl.className = 'value'+(lucroHoje<0?' neg':'');
+  const mesEl = document.getElementById('lucroMes');
+  mesEl.textContent = fmtMzn(lucroMes); mesEl.className = 'value'+(lucroMes<0?' neg':'');
+
+  tbody.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ok = window.confirm(t('confirmDeleteSale'));
+      if(!ok) return;
+      sales.splice(parseInt(btn.dataset.idx),1);
+      saveData(); render();
+      showToast(t('toastSaleRemoved'));
+    });
+  });
+}
+
+document.getElementById('addBtn').addEventListener('click', ()=>{
+  const data = dataInput.value || new Date().toISOString().slice(0,10);
+  const vendaUsd = parseFloat(document.getElementById('vendaUsd').value) || 0;
+  const compraUsd = parseFloat(document.getElementById('compraUsd').value) || 0;
+  const precoVenda = parseFloat(document.getElementById('precoVenda').value) || 0;
+  const taxa = parseFloat(taxaInput.value) || 0;
+  if(vendaUsd===0 && compraUsd===0 && precoVenda===0){
+    showToast(t('errorFillSale'), true);
+    return;
+  }
+  sales.push({data, vendaUsd, compraUsd, precoVenda, taxa});
+  saveData(); render();
+  showToast(t('successSaleAdded'));
+  document.getElementById('vendaUsd').value='';
+  document.getElementById('compraUsd').value='';
+  document.getElementById('precoVenda').value='';
+  document.getElementById('vendaUsd').focus();
+});
+taxaInput.addEventListener('change', saveData);
+
+/* ---- Fecho do dia ---- */
+const fIds = ['fPaypal','fAirtm','fMpesa','fEmola','cambioAirtm'];
+const fDataInput = document.getElementById('fData');
+fDataInput.value = new Date().toISOString().slice(0,10);
+let fechos = [];
+
+function loadFecho(){
+  try{
+    fIds.forEach(id=>{
+      const v = localStorage.getItem('gn_'+id);
+      if(v !== null) document.getElementById(id).value = v;
+    });
+    const f = localStorage.getItem('gn_fechos');
+    fechos = f ? JSON.parse(f) : [];
+  }catch(e){ fechos = []; }
+}
+function saveFechoInputs(){
+  try{ fIds.forEach(id=>{ localStorage.setItem('gn_'+id, document.getElementById(id).value); }); }catch(e){}
+}
+function calcTotais(){
+  const paypal = parseFloat(document.getElementById('fPaypal').value) || 0;
+  const airtm = parseFloat(document.getElementById('fAirtm').value) || 0;
+  const mpesa = parseFloat(document.getElementById('fMpesa').value) || 0;
+  const emola = parseFloat(document.getElementById('fEmola').value) || 0;
+  const cambio = parseFloat(document.getElementById('cambioAirtm').value) || 0;
+  const usdCarteiras = paypal + airtm;
+  const mznCarteiras = mpesa + emola;
+  const usdConvertido = cambio > 0 ? mznCarteiras / cambio : 0;
+  const mznConvertido = usdCarteiras * cambio;
+  return { totalUsd: usdCarteiras + usdConvertido, totalMzn: mznCarteiras + mznConvertido };
+}
+function renderFecho(){
+  const t2 = calcTotais();
+  document.getElementById('fTotalUsd').textContent = fmtUsd(t2.totalUsd);
+  document.getElementById('fTotalMzn').textContent = fmtMzn(t2.totalMzn);
+  saveFechoInputs();
+}
+function saveFechosList(){ try{ localStorage.setItem('gn_fechos', JSON.stringify(fechos)); }catch(e){} }
+
+function renderFechoHistorico(){
+  const body = document.getElementById('fechoBody');
+  const empty = document.getElementById('fechoEmpty');
+  body.innerHTML = '';
+  empty.style.display = fechos.length === 0 ? 'block' : 'none';
+
+  const ordenadosAsc = [...fechos].sort((a,b)=> a.data.localeCompare(b.data));
+  const lucroUsdPorData = {}, lucroMznPorData = {};
+  ordenadosAsc.forEach((f, i)=>{
+    lucroUsdPorData[f.data] = i === 0 ? null : f.totalUsd - ordenadosAsc[i-1].totalUsd;
+    lucroMznPorData[f.data] = i === 0 ? null : f.totalMzn - ordenadosAsc[i-1].totalMzn;
+  });
+
+  const ultimo = ordenadosAsc[ordenadosAsc.length-1];
+  const stat = document.getElementById('fLucroDia');
+  if(ultimo && lucroUsdPorData[ultimo.data] !== null){
+    stat.textContent = fmtUsd(lucroUsdPorData[ultimo.data]) + ' / ' + fmtMzn(lucroMznPorData[ultimo.data]);
+    stat.className = 'value' + (lucroUsdPorData[ultimo.data] < 0 ? ' neg' : '');
+  }else{
+    stat.textContent = '—'; stat.className = 'value';
+  }
+
+  const ordenadosDesc = [...fechos].sort((a,b)=> b.data.localeCompare(a.data));
+  ordenadosDesc.forEach((f)=>{
+    const lucroUsd = lucroUsdPorData[f.data];
+    const lucroMzn = lucroMznPorData[f.data];
+    const lucroUsdTxt = lucroUsd === null || lucroUsd === undefined ? '—' : fmtUsd(lucroUsd);
+    const lucroMznTxt = lucroMzn === null || lucroMzn === undefined ? '—' : fmtMzn(lucroMzn);
+    const lucroUsdClass = lucroUsd > 0 ? 'pos' : (lucroUsd < 0 ? 'neg' : '');
+    const lucroMznClass = lucroMzn > 0 ? 'pos' : (lucroMzn < 0 ? 'neg' : '');
+    const idxReal = fechos.indexOf(f);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${f.data}</td>
+      <td class="num">${fmtUsd(f.totalUsd)}</td>
+      <td class="num">${fmtMzn(f.totalMzn)}</td>
+      <td class="num ${lucroUsdClass}">${lucroUsdTxt}</td>
+      <td class="num ${lucroMznClass}">${lucroMznTxt}</td>
+      <td class="num"><button class="del" data-idx="${idxReal}">${t('tableRemove')}</button></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  body.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ok = window.confirm(t('confirmDeleteFecho'));
+      if(!ok) return;
+      fechos.splice(parseInt(btn.dataset.idx),1);
+      saveFechosList();
+      renderFechoHistorico();
+      showToast(t('toastFechoRemoved'));
+    });
+  });
+}
+
+document.getElementById('saveFechoBtn').addEventListener('click', ()=>{
+  const data = fDataInput.value || new Date().toISOString().slice(0,10);
+  const tt = calcTotais();
+  const existente = fechos.findIndex(f => f.data === data);
+  if(existente >= 0){ fechos[existente] = { data, ...tt }; }
+  else{ fechos.push({ data, ...tt }); }
+  saveFechosList();
+  renderFechoHistorico();
+  showToast(t('successFechoSaved'));
+
+  ['fPaypal','fAirtm','fMpesa','fEmola'].forEach(id=>{ document.getElementById(id).value = ''; });
+  renderFecho();
+});
+fIds.forEach(id=>{ document.getElementById(id).addEventListener('input', renderFecho); });
+
+applyI18n();
+checkLogin();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
